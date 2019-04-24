@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>Document</title>
+</head>
+<body>
+    <nav>
+        <p>Routes...</p>
+        <ol>
+            <li>GET <a href="/">/</a> - displays all of the scraped data from the "articles" collection in the newsMongoDB database for end users to read and comment on</li>
+            <li>GET <a href="/scrape">/scrape</a> - sends a request to scrape a website's html content and store the desired parts in the "articles" collection in the newsMongoDB database</li>  
+            <li>GET <a href="/articles">/articles</a> - displays ALL of the scraped data from the "articles" collection in the newsMongoDB database in JSON format</li>  
+            <li>GET <a href="/articles/id">/articles/id</a> - displays ONE item of the scraped data from the "articles" collection in the newsMongoDB database in JSON format</li> 
+            <li>POST /articles/id - creates a "notes" entry in the newsMongoDB database based on user input and ties it to a specific article in the "articles" collection. </li>
+        </ol>
+    </nav>
+
+    <div id="wrapper">
+        <h1>Mongo News</h1>
+        <div id="articles">Articles</div>
+        <div id="notes">Notes</div>
+    </div>
+
+    <!-- get jQuery -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
+    <!-- get local front-end JavaScipt -->
+    <script src="app.js"></script>
+
+    <!-- move this to app.js when done developing -->
+    <script>
+        
+        // 1. Grab the articles as JSON and display each one on the page (ON PAGE LOAD???)
+
+        // The getJSON() method is used to get JSON data using an AJAX HTTP GET request.
+        $.getJSON("/articles", function(json) {
+            //loop through and display on the page
+            console.log("$.getJSON('/articles')...", json);
+        });
+
+        // 2. // Whenever someone clicks a p tag
+        $(document).on("click", "p", function() {
+            console.log("$(this).text() = ", $(this).text());
+        });
+
+        // 3. // When you click the savenote button
+        $(document).on("click", "#savenote", function() {
+            console.log("$(this).text() = ", $(this).text());
+        });
+
+
+    </script>
+
+</body>
+</html>
