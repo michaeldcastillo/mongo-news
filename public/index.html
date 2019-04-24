@@ -4,24 +4,87 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta http-equiv="X-UA-Compatible" content="ie=edge">
-    <title>Document</title>
+    <title>localhost:8080</title>
+    <style type="text/css">
+        body
+        {
+            font-family: Arial, Helvetica, sans-serif;
+            font-size:16px;
+            font-size: 1em;
+            font-size:100%; /* 100% = 1em = 16px */
+            
+        }
+
+        ol#dev-notes
+        {
+            font-size:100%;
+            display: block;
+        }
+
+        .bold
+        {
+            font-weight:bold;
+        }
+
+        .highlight
+        {
+            background-color:yellow;
+        }
+    </style>
 </head>
 <body>
     <nav>
-        <p>Routes...</p>
-        <ol>
-            <li>GET <a href="/">/</a> - displays all of the scraped data from the "articles" collection in the newsMongoDB database for end users to read and comment on</li>
-            <li>GET <a href="/scrape">/scrape</a> - sends a request to scrape a website's html content and store the desired parts in the "articles" collection in the newsMongoDB database</li>  
-            <li>GET <a href="/articles">/articles</a> - displays ALL of the scraped data from the "articles" collection in the newsMongoDB database in JSON format</li>  
-            <li>GET <a href="/articles/id">/articles/id</a> - displays ONE item of the scraped data from the "articles" collection in the newsMongoDB database in JSON format</li> 
-            <li>POST /articles/id - creates a "notes" entry in the newsMongoDB database based on user input and ties it to a specific article in the "articles" collection. </li>
+        <a href="example-class.html" target="_blank">Class Example (local)</a> | <a href="example-nyt.html" target="_blank">NYT Example (local)</a>
+
+        <ol id="dev-notes"><span class="bold">Dev Notes</span>
+                <br><br>
+            <li>GET... <a href="/"><span class="bold">/</span></a></li>
+                <br>
+                <ul>
+                    <li>Immediately executes <span class="bold">$.getJSON("/articles")</span> on page load.</li>
+                    <li>Then <span class="bold">app.get("/articles")</span> executes <span class="bold">db.<span class="highlight">Article</span>.find({})</span> to retrieve all articles from the articles collection in the database in JSON format.</li>
+                </ul>
+                <br>
+            <li>GET... <a href="/scrape"><span class="bold">/scrape</span></a></li>  
+                <br>
+                <ul>
+                    <li>Immediately executes an AJAX request via <span class="bold">axios.get("http://www.echojs.com/")</span> to gather a website's html content.</li>
+                    <li>Then uses <span class="bold">cheerio.load(response.data)</span> to provide the ability to extract the desired parts using a jQuery-like syntax.</li>
+                    <li>Finally, executes a <span class="bold">db.<span class="highlight">Article</span>.create(dataObj)</span> to add those parts to the "articles" collection in the newsMongoDB database.</li>
+                </ul>
+                <br>
+            <li>GET... <a href="/articles"><span class="bold">/articles</span></a></li> 
+                <br>
+                <ul>
+                    <li>Immediately executes <span class="bold">db.<span class="highlight">Article</span>.find({})</span> to retrieve all articles from the articles collection in the database in JSON format.</li>
+                </ul> 
+                <br>
+            <li>GET... <a href="/articles/5cbf719d3223e5314703a88c"><span class="bold">/articles/5cbf719d3223e5314703a88c</span></a></li> 
+                <br>
+                <ul>
+                    <li>Immediately executes <span class="bold">db.<span class="highlight">Article</span>.findOne({ _id: req.params.id }).populate("note")</span> to retrieve a single article from the articles collection in the database in JSON format.</li>
+                </ul>
+                <br>
+            <li>POST... <span class="bold">/articles/id</span> (id of the article)</li>
+                <br>
+                <ul>
+                    <li>Immediately executes <span class="bold">app.post("/articles/:id")</span>, which executes <span class="bold">db.<span class="highlight">Note</span>.create(dataObj)</span> in the notes collection.</li>
+                    <li>The callback returns <span class="bold">db.<span class="highlight">Article</span>.findOneAndUpdate({ _id: req.params.id }, { note: mongoDocNote._id }, { new: true })</span> to associate the new note's id to the article.</li>
+                </ul>
+                <br>
+                <hr>
         </ol>
     </nav>
-
+            
     <div id="wrapper">
         <h1>Mongo News</h1>
-        <div id="articles">Articles</div>
-        <div id="notes">Notes</div>
+        <button class="render-db">db.articles.find()</button>
+            <br><br>
+        <div id="notes" style="border:1px solid red; background-color:cornsilk;"><span class="bold">Notes</span></div>
+            <br></br>
+        <div id="articles" style="border:1px solid red; background-color:#f5f5f5;"><span class="bold">Articles</span></div>
+            <br></br>
+       <!-- <div id="notes"><span class="bold">Notes</span></div> -->
     </div>
 
     <!-- get jQuery -->
@@ -31,25 +94,124 @@
 
     <!-- move this to app.js when done developing -->
     <script>
-        
+
+$(document).ready(function() {
+        /*
         // 1. Grab the articles as JSON and display each one on the page (ON PAGE LOAD???)
 
         // The getJSON() method is used to get JSON data using an AJAX HTTP GET request.
         $.getJSON("/articles", function(json) {
             //loop through and display on the page
-            console.log("$.getJSON('/articles')...", json);
-        });
+            //console.log("$.getJSON('/articles')...", json);
+            console.log("json[0]._id = ", json[0]._id);
+            console.log("json[0].headline = ", json[0].headline);
+            console.log("json[0].url = ", json[0].url);
+            console.log("json[0].summary = ", json[0].summary);
 
+            // Example output... the whole <p> tag becomes a link in this example!!!
+             <p data-id='5cbf73f4548491328ea52ecd'>How Android JS Is Different From Other Frameworks/Libraries ?<br>https://medium.com/@Chhekur/how-android-js-is-different-from-other-frameworks-libraries-d3afa269fedf</p>
+            
+
+            for (var i = 0; i < json.length; i++) {
+                var html = "<p data-id='" + json[i]._id + "'>" + json[i].headline + "<br>" + json[i].url + "</p>";
+                console.log(html);
+                $("#articles").append(html);
+            }
+
+        });
+        */
+//----------------------------------------------------------------------------
+        // 1.
+        function renderArticlesCollection() {
+
+            $.getJSON("/articles", function(json) {
+    
+            console.log("json[0]._id = ", json[0]._id);
+            console.log("json[0].headline = ", json[0].headline);
+            console.log("json[0].url = ", json[0].url);
+            console.log("json[0].summary = ", json[0].summary);
+
+            for (var i = 0; i < json.length; i++) {
+                var html = "<p data-id='" + json[i]._id + "'>" + json[i].headline + "<br>" + json[i].url + "</p>";
+                console.log(html);
+                $("#articles").append(html);
+            }
+
+            });
+
+        }
+
+        $(document).on("click", ".render-db", renderArticlesCollection);
+
+//----------------------------------------------------------------------------
         // 2. // Whenever someone clicks a p tag
         $(document).on("click", "p", function() {
+
+            $("#notes").empty();
+
             console.log("$(this).text() = ", $(this).text());
+
+            var articleId = $(this).attr("data-id"); //grab the id of the article element
+            var routeUrl = "/articles/"+articleId; //append the id to the route
+            console.log("routeUrl = ", routeUrl);
+            
+            //hit the /articles/:id route...
+            $.ajax({ method: "GET", url: routeUrl }).then(function(dataObj) {
+                console.log("dataObj._id = ", dataObj._id);
+                console.log("dataObj.headline = ", dataObj.headline);
+                console.log("dataObj.url = ", dataObj.url);
+                console.log("dataObj.summary = ", dataObj.summary);
+                //console.log("dataObj.note = ", dataObj.note); //undefined, regardless???
+
+                var html = "<h4>Article Headline: '" + dataObj.headline + "'</h4>" + "<h4>Article ID: " + dataObj._id + "</h4>" + "<input id='note-title' name=''><br>" + "<textarea id='note-body' name=''></textarea><br>" + "<button data-id='" + dataObj._id + "' id='save-note'>Save Note</button>";
+                console.log(html);
+                $("#notes").append(html);
+
+                if(dataObj.note) {
+                    //place it on the page
+                    console.log("dataObj.note.title = ", dataObj.note.title);
+                    console.log("dataObj.note.body = ", dataObj.note.body);
+                    $("#note-title").val(dataObj.note.title);
+                    $("#note-body").val(dataObj.note.body);
+                }
+
+            });
+
+
         });
 
+//----------------------------------------------------------------------------
         // 3. // When you click the savenote button
-        $(document).on("click", "#savenote", function() {
+        $(document).on("click", "#save-note", function() {
+
             console.log("$(this).text() = ", $(this).text());
+
+            var articleId = $(this).attr("data-id"); //grab the id of the article element
+            var routeUrl = "/articles/"+articleId; //append the id to the route
+            console.log("routeUrl = ", routeUrl);
+
+            //hit the /articles/:id route... send note data as { title: "some title", body: "some body text" }
+            var noteTitle = $("#note-title").val().trim();
+            var noteBody = $("#note-body").val().trim();
+
+            $.ajax({ method: "POST", url: routeUrl, data: { title: noteTitle, body: noteBody } }).then(function(dataObj) {
+                console.log("dataObj = ", dataObj);
+                console.log("dataObj._id = ", dataObj._id);
+                console.log("dataObj.headline = ", dataObj.headline);
+                console.log("dataObj.url = ", dataObj.url);
+                console.log("dataObj.summary = ", dataObj.summary);
+                console.log("dataObj.note = ", dataObj.note); //undefined, regardless???
+            });
+
+            $("#notes").empty();
+            $("#note-title").val("");
+            $("#note-body").val("");
+
+
         });
 
+        
+    });
 
     </script>
 

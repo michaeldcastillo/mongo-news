@@ -6,7 +6,7 @@ var cheerio = require("cheerio"); //parse, traverse, manipulate API data server-
 var db = require("./models"); //require all database models in the models folder
 
 
-var PORT = 3000;
+var PORT = 8080;
 
 var app = express(); //initialize express web application
 
@@ -38,37 +38,6 @@ app.get("/", function(req, res) {
 
 //app.set("json replacer", replacer); //express res.json property transformation rules
 //app.set("json spaces", 2); //number of spaces for indentation (when viewing Raw)
-
-/* 
-EXAMPLE of response.date...
-
-<article data-news-id="31552">
-
-    <a href="#up" class="uparrow">&#9650;</a>
-   
-    <h2>
-        <a href="https://link.medium.com/nDvjHs3n7V" rel="nofollow">Node.js lowdb: a lightweight database alternative</a>
-    </h2>
-
-    <address>at link.medium.com</address>
-
-    <a href="#down" class="downarrow">&#9660;</a>
-    
-    <p>
-        <span class="upvotes">3</span> up and
-        <span class="downvotes">0</span> down, posted by
-        
-        <username>
-            <a href="/user/admin%40helpdev.eu">admin@helpdev.eu</a>
-        </username> 9 hours ago
-
-        <a href="/news/31552">discuss</a>
-
-    </p>
-
-</article>
-
-*/
 
 app.get("/scrape", function(req, res) {
     
