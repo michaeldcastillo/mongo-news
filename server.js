@@ -6,7 +6,8 @@ var cheerio = require("cheerio"); //parse, traverse, manipulate API data server-
 var db = require("./models"); //require all database models in the models folder
 
 
-var PORT = 8080;
+//var PORT = 8080;
+var PORT = process.env.PORT || 8080;
 
 var app = express(); //initialize express web application
 
