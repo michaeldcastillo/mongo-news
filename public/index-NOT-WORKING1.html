@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta http-equiv="X-UA-Compatible" content="ie=edge">
-    <title>Mongo News Scraper</title>
+    <title>localhost:8080</title>
     <style type="text/css">
         body
         {
@@ -13,12 +13,6 @@
             font-size: 1em;
             font-size:100%; /* 100% = 1em = 16px */
             
-        }
-
-        #wrapper
-        {
-            margin:auto;
-            width:80%;
         }
 
         ol#dev-notes
@@ -41,10 +35,6 @@
         .highlight
         {
             background-color:yellow;
-        }
-        .remove-note
-        {
-            background-color:silver;
         }
     </style>
 </head>
@@ -95,22 +85,14 @@
     </nav>
             
     <div id="wrapper">
-        <h1 style="padding:0px; margin:0px;">Mongo News Scraper</h1>
-        <span style="font-size:80%;">Target URL: <a href="http://www.echojs.com/" target="_blank">Echo JS</a></span>
-        <br><br>
-        <button class="scrape-url">Scrape URL</button> | <button class="render-db" style="display:none;">Display Data</button><span style="display:none;"> | </span><button class="json-api">Articles JSON</button> | <button class="remove-all">Remove All</button>
-        <br><br>
-       <!-- <hr> -->
-        <br>
-                   
-        <table style="border:0px solid red;">
-            <tr>
-                <td><div id="articles" style="border:1px solid silver; background-color:#f7f7f7; max-width: 700px; min-width:300px; height:700px; overflow:scroll;"><span class="bold">Articles:&nbsp;<span id="count" style="font-weight:normal;"></span></span></div></td>
-                <td valign="top"><div id="notes" style="border:1px solid silver; background-color:#f7f7f7; min-width:0px; max-width:350px;"></div></td>                
-            </tr>
-
-        </table>
-       
+        <h1>Mongo News</h1>
+        <button class="scrape-url">Scrape URL</button> | <button class="render-db" style="display:none;">Display Data</button><span style="display:none;"> | </span><button class="json-api">JSON Data</button> | <button class="remove-all">Remove All</button>
+            <br><br>
+        <div id="notes" style="border:1px solid red; background-color:cornsilk;"><span class="bold">Notes</span></div>
+            <br></br>
+        <div id="articles" style="border:1px solid red; background-color:#f5f5f5;"><span class="bold">Articles</span></div>
+            <br></br>
+       <!-- <div id="notes"><span class="bold">Notes</span></div> -->
     </div>
 
     <!-- get jQuery -->
@@ -123,17 +105,13 @@
 
 $(document).ready(function() {
 
-    var globalId = 0;
-
     function articlesJSON() {
         //hit the /articles route...
         //$.ajax({ method: "GET", url: "/articles" }).then(function(response) {console.log("/articles response = ", response);});
         //no need to hit the articles route... just navigate to the URL and the server will do the rest
         console.log("window.location = ", window.location);
         console.log("window.location.origin = ", window.location.origin);
-        //window.location = window.location.origin + "/articles";
-        var newTab = window.location.origin + "/articles";
-        window.open(newTab, "_blank");
+        window.location = window.location.origin + "/articles";
 
     }
     $(document).on("click", ".json-api", articlesJSON);
@@ -143,7 +121,7 @@ $(document).ready(function() {
     function scrapeUrlData() {
         //hit the /scrape route...
         $.ajax({ method: "GET", url: "/scrape" }).then(function(response) {
-            //console.log("/scrape response = ", response);
+            console.log("/scrape response = ", response);
             window.location = window.location.origin;
         });
 
@@ -151,20 +129,41 @@ $(document).ready(function() {
     $(document).on("click", ".scrape-url", scrapeUrlData);
 
 
+//----------------------------------------------------------------------------
+        /*
+        // 1. Grab the articles as JSON and display each one on the page (ON PAGE LOAD???)
 
+        // The getJSON() method is used to get JSON data using an AJAX HTTP GET request.
+        $.getJSON("/articles", function(json) {
+            //loop through and display on the page
+            //console.log("$.getJSON('/articles')...", json);
+            console.log("json[0]._id = ", json[0]._id);
+            console.log("json[0].headline = ", json[0].headline);
+            console.log("json[0].url = ", json[0].url);
+            console.log("json[0].summary = ", json[0].summary);
+
+            // Example output... the whole <p> tag becomes a link in this example!!!
+             <p data-id='5cbf73f4548491328ea52ecd'>How Android JS Is Different From Other Frameworks/Libraries ?<br>https://medium.com/@Chhekur/how-android-js-is-different-from-other-frameworks-libraries-d3afa269fedf</p>
+            
+
+            for (var i = 0; i < json.length; i++) {
+                var html = "<p data-id='" + json[i]._id + "'>" + json[i].headline + "<br>" + json[i].url + "</p>";
+                console.log(html);
+                $("#articles").append(html);
+            }
+
+        });
+        */
 //----------------------------------------------------------------------------
         // 1.
        // function renderArticlesCollection() {
 
         $.getJSON("/articles", function(json) {
 
-            //console.log("json = ", json);
+            console.log("json = ", json);
 
             if(json.length === 0) {
                 console.log("there is NO json data");
-
-                $("#count").text(json.length);
-                
                 var html = "<h5>No data found. Please hit the 'Scrape URL' button to retrieve some data.</h5>";
                 $("#articles").append(html);
 
@@ -175,27 +174,17 @@ $(document).ready(function() {
                 console.log("json[0].url = ", json[0].url);
                 console.log("json[0].summary = ", json[0].summary);
 
-                $("#count").text(json.length);
-
                 for (var i = 0; i < json.length; i++) {
                     
-                    //  THIS RENDERS ALL ARTICLES...
-                    var html = "<div style='background-color:#f7f7f7;; padding:10px; border:0px solid red; border-bottom:1px solid silver;'>" + 
-                    //"<p style='border:1px solid purple;' data-id='"+json[i]._id+"'>" + 
-                    "<p style='margin:0px;'>" +
-                    "<span class='bold'>" +
-                    json[i].headline + 
-                    "</span>" +
-                    "</p>" +
-                    "<a href='"+json[i].url+"' target='_blank'>"+json[i].url+"</a>" +
-                    //"</p>" + 
-                    "<br>" + 
-                    "<br>" + 
+                    var html = "<div style='background-color:cornsilk; padding:10px;'>" + 
+                    "<p data-id='" + 
+                    json[i]._id + "'>" + 
+                    json[i].headline + "<br>" + 
+                    json[i].url + "</p>" + 
                     "<button data-id='" + json[i]._id + "' class='remove-article'>Remove Article</button>" +
-                    " | " +
-                    //"<div id='"+json[i]._id+"' style='display:none; background-color:#f7f7f7;; padding:10px; border:1px solid blue;'></div>" +
-                    "<button class='add-note' data-id1='"+json[i]._id+"' data-headline='"+json[i].headline+"' data-url='"+json[i].url+"'>Add Note [+]</button>" +
-                    "</div>";
+                    "<div id='"+json[i]._id+"' style='background-color:cornsilk; padding:10px; border:1px solid blue;'></div>" +
+                    "</div>" +  
+                    "<hr>";
 
                     /*
                     <div>
@@ -206,7 +195,7 @@ $(document).ready(function() {
                     <hr>
                     */
                     
-                    //console.log(html);
+                    console.log(html);
                     $("#articles").append(html);
                 }
             }
@@ -224,10 +213,18 @@ $(document).ready(function() {
 
             console.log("$(this).text() = ", $(this).text());
 
-            var articleId1 = $(this).attr("data-id"); //grab the id of the article element
-            var routeUrl1 = "/articles/"+articleId1; //append the id to the route
+            var articleId = $(this).attr("data-id"); //grab the id of the article element
+            var routeUrl1 = "/articles/"+articleId; //append the id to the route
             console.log("routeUrl1 = ", routeUrl1);
 
+           /* $.ajax({ method: "POST", url: routeUrl, data: { title: noteTitle, body: noteBody } }).then(function(dataObj) {
+                console.log("dataObj = ", dataObj);
+                console.log("dataObj._id = ", dataObj._id);
+                console.log("dataObj.headline = ", dataObj.headline);
+                console.log("dataObj.url = ", dataObj.url);
+                console.log("dataObj.summary = ", dataObj.summary);
+                console.log("dataObj.note = ", dataObj.note); //undefined, regardless???
+            }); */
 
             $.ajax({ method: "PUT", url: routeUrl1, data: { key: "value" } }).then(function(response) {
                 console.log("response = ", response);
@@ -269,27 +266,17 @@ $(document).ready(function() {
 
         });
 
-//--------------------------------- CLOSE NOT empty() -------------------------------------------
-        
-        $(document).on("click", ".close-note", function() {
-            $("#notes").empty();
-        });
-
-        
-
-
 
 //----------------------------------------------------------------------------
         // 2. // Whenever someone clicks a p tag
-        $(document).on("click", ".add-note", function() {
+        $(document).on("click", "p", function() {
 
-            $("#notes").empty();
+            //$("#notes").empty();
 
             console.log("\n$(this).text() = ", $(this).text());
 
-            //var articleId = $(this).attr("data-id"); //grab the id of the article element
-            var articleId3 = $(this).attr("data-id1"); //grab the class of the article element
-            var routeUrl3 = "/articles/"+articleId3; //append the id to the route
+            var articleId = $(this).attr("data-id"); //grab the id of the article element
+            var routeUrl3 = "/articles/"+articleId; //append the id to the route
             console.log("routeUrl3 = ", routeUrl3);
             
             //hit the /articles/:id route...
@@ -300,31 +287,21 @@ $(document).ready(function() {
                 console.log("dataObj.summary = ", dataObj.summary);
                 //console.log("dataObj.note = ", dataObj.note); //undefined, regardless???
 
-                //  THIS RENDERS A NOTE...
-                var html = "<div><span class='bold'>Note:</span></div>" + 
-                "<div style='padding:10px; background-color:#f7f7f7;; border:0px solid red;'>" + 
-                "<button class='close-note' style='display:inline-block;'>Close Note [x]</button><br>" + 
-                "&nbsp;<p style='padding:0px; margin:0px; display:inline-block;'>" + 
-                "<span class='bold'>" + 
-                dataObj.headline + //Example... 'How do you compose JavaScript functions with multiple parameters?'
-                "</span>" + 
-                "'</p><br><br>" + 
-                //"<h4>Article ID: " + dataObj._id + "</h4>" + 
-                "<label for='note-title'>Note Title</label><br>" +
+                var html = "<h4>Article Headline: '" + dataObj.headline + "'</h4>" + 
+                "<h4>Article ID: " + dataObj._id + "</h4>" + 
                 "<input id='note-title' name=''><br>" + 
-                "<label for='note-body'>Note Body</label><br>" +
-                "<textarea id='note-body' name='' rows='10' cols='50'></textarea><br><br>" + 
+                "<textarea id='note-body' name=''></textarea><br>" + 
                 "<button data-id='" + dataObj._id + "' id='save-note'>Save Note</button>" + " | " +
-                //"<button data-id='" + dataObj._id + "' class='remove-note'>Remove Note</button>" + " | " +
-                "<button data-id='" + dataObj._id + "' id='json-api-id'>Note JSON</button></div>";
+                "<button data-id='" + dataObj._id + "' class='remove-note'>Remove Note</button>" + " | " +
+                "<button data-id='" + dataObj._id + "' id='json-api-id'>JSON Data</button>";
 
                 //console.log(html);
-                $("#notes").append(html);
+                //$("#notes").append(html);
                 //$(this).css("border", "2px solid purple");
-                //var clickedElement = $(this).attr("data-id");
-                //console.log("\nclickedElement = ", clickedElement); //undefined!!!
-                //console.log("$(this).text() = ", $(this).text()); //empty!!!
-                //$("#"+dataObj._id).append(html);
+                var clickedElement = $(this).attr("data-id");
+                console.log("\nclickedElement = ", clickedElement); //undefined!!!
+                console.log("$(this).text() = ", $(this).text()); //empty!!!
+                $("#"+dataObj._id).append(html);
 
                     /* Example page rendered HTML...
                     <div>
@@ -357,8 +334,8 @@ $(document).ready(function() {
 
             console.log("$(this).text() = ", $(this).text());
 
-            var articleId4 = $(this).attr("data-id"); //grab the id of the article element
-            var routeUrl4 = "/articles/"+articleId4; //append the id to the route
+            var articleId = $(this).attr("data-id"); //grab the id of the article element
+            var routeUrl4 = "/articles/"+articleId; //append the id to the route
             console.log("routeUrl = ", routeUrl4);
 
             //hit the /articles/:id route... send note data as { title: "some title", body: "some body text" }
@@ -374,9 +351,9 @@ $(document).ready(function() {
                 console.log("dataObj.note = ", dataObj.note); //undefined, regardless???
             });
 
-           // $("#notes").empty();
-           // $("#note-title").val("");
-           // $("#note-body").val("");
+            $("#notes").empty();
+            $("#note-title").val("");
+            $("#note-body").val("");
 
 
         });
@@ -386,15 +363,13 @@ $(document).ready(function() {
 
         console.log("$(this).text() = ", $(this).text());
 
-        var articleId5 = $(this).attr("data-id"); //grab the id of the article element
-        var routeUrl5 = "/articles/"+articleId5; //append the id to the route
+        var articleId = $(this).attr("data-id"); //grab the id of the article element
+        var routeUrl5 = "/articles/"+articleId; //append the id to the route
         console.log("routeUrl = ", routeUrl5);
 
         console.log("window.location = ", window.location);
         console.log("window.location.origin = ", window.location.origin);
-        //window.location = window.location.origin + routeUrl5;
-        var newTab2 = window.location.origin + routeUrl5;
-        window.open(newTab2, "_blank");
+        window.location = window.location.origin + routeUrl5;
 
         });
         

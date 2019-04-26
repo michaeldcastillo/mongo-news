@@ -25,7 +25,8 @@ mongoose.connect(MONGODB_URI, { useNewUrlParser: true });
 // =============================== BEGIN ROUTES ===============================
 
 
-// ------------------------------- GET -------------------------------
+
+// ------------------------------- GET app.get() -------------------------------
 
 // 0. TEST default page
 
@@ -34,6 +35,8 @@ app.get("/", function(req, res) {
     res.send("an index.html file in a public directory supersedes this route");
 });
 
+
+// ------------------------------- GET app.get() -------------------------------
 // 1. SCRAPE WEBSITE when navigating to this URL
 
 //app.set("json replacer", replacer); //express res.json property transformation rules
@@ -71,19 +74,22 @@ app.get("/scrape", function(req, res) {
 
 });
 
+
+// ------------------------------- GET app.get() -------------------------------
 // 2. READ DATABASE (All) when navigating to this URL
 
 app.get("/articles", function(req, res) {
     //res.send("show articles from the database in JSON format");
 
     db.Article.find({}).then(function(mongoDoc) {
-        console.log("-------------------------------------------------");
-        console.log("mongoose find() mongoDoc Article = ", mongoDoc); 
+        //console.log("-------------------------------------------------");
+        //console.log("mongoose find() mongoDoc Article = ", mongoDoc); 
         res.json(mongoDoc);
     }).catch(function(err) {console.log(err); res.json(err);});
 
 });
 
+// ------------------------------- GET app.get() -------------------------------
 // 3. READ DATABASE (One) when navigating to this URL
 
 app.get("/articles/:id", function(req, res) {
@@ -98,9 +104,88 @@ app.get("/articles/:id", function(req, res) {
 
 });
 
+// ------------------------------- GET app.get() -------------------------------
+
+app.get("/articles/:id/detail", function(req, res) {
+    
+    db.Article.findOne({ _id: req.params.id }).populate("note").then(function(mongoDoc) {f
+
+        console.log("mongoDoc = ", mongoDoc);
+         /* Example mongoDoc...
+            {   
+                _id: 5cc33b7511f4058842fa95c5,
+                headline: 'Angular 8: First Release Candidate released',
+                summary: 'some hard-coded text summary',
+                url: '/news/31603',
+                __v: 0 
+            }
+        */
+        
+        var html = "<h4>Article Headline: '" + mongoDoc.headline + "'</h4>" + 
+        "<h4>Article ID: " + mongoDoc._id + "</h4>" + 
+        "<input id='note-title' name=''><br>" + 
+        "<textarea id='note-body' name=''></textarea><br>" + 
+        "<button data-id='" + mongoDoc._id + "' id='save-note'>Save Note</button>" + " | " +
+        "<button data-id='" + mongoDoc._id + "' class='remove-note'>Remove Note</button>" + " | " +
+        "<button data-id='" + mongoDoc._id + "' id='json-api-id'>JSON Data</button>";
+
+        //var html = "<h4>Hello World</h4>";
+
+        res.send(html);
+
+    }).catch(function(err) {console.log("error", err); res.json(err);});
+
+        
+           
+     
+      
+
+});
+
+// ------------------------------- PUT app.put() [delete an article] -------------------------------
 
 
-// ------------------------------- POST -------------------------------
+app.put("/articles/:id", function(req, res) {
+    console.log("req.params.id = ", req.params.id);
+    console.log("req.body = ", req.body);
+
+    db.Article.deleteOne({ _id: req.params.id }).then(function(result) {
+        console.log("db.Article.deleteOne({ _id: req.params.id })...result = ", result);
+        //res.redirect("http://localhost:8080/index.html");
+        res.sendStatus(200);
+    }).catch(function(err) {console.log(err); res.json(err);});
+
+});
+
+// ------------------------------- PUT app.put() [delete ALL articles] -------------------------------
+
+
+app.put("/test/remove", function(req, res) {
+    console.log("\n\n---------------- TEST ------------------");
+    console.log("\n\nreq.body = ", req.body);
+    
+    db.Article.deleteMany({}).then(function(result) {
+        console.log("articles/remove... result = ", result);
+        res.json(result);
+    }).catch(function(err) {console.log(err); res.json(err);}); 
+
+
+   /* app.get("/api/delete", function(req, res) {
+        db.News.deleteMany({})
+          .then(function(dbNews) {
+            res.json(dbNews);
+          })
+          .catch(function(err) {
+            res.json(err);
+          });
+      }); */
+
+});
+
+
+
+
+// ------------------------------- POST app.post() [create a note] -------------------------------
 
 app.post("/articles/:id", function(req, res) {
     console.log("app.post('/articles/"+req.params.id+"') console.log = update and save a comment to an existing article");
